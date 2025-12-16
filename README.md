@@ -84,6 +84,37 @@ npm run build
 npm start
 ```
 
+#### Production Deployment Notes
+
+**Chrome/Chromium Requirements:**
+
+Puppeteer requires Chrome/Chromium to generate PDFs. For production deployments:
+
+1. **Automatic Installation (Recommended):**
+
+    - The `postinstall` script will attempt to download Chrome automatically
+    - This works for most deployment platforms
+
+2. **Manual Chrome Installation:**
+
+    - Install Chrome/Chromium on your server
+    - Set the `CHROME_PATH` environment variable to point to the Chrome executable
+    - Example: `CHROME_PATH=/usr/bin/chromium`
+
+3. **Common Chrome Paths:**
+
+    - Linux: `/usr/bin/chromium` or `/usr/bin/google-chrome`
+    - The code will automatically detect Chrome in common locations
+
+4. **For Serverless/Container Deployments:**
+    - Ensure Chrome dependencies are installed in your container
+    - For Docker, add Chrome installation to your Dockerfile
+    - For platforms like Vercel, consider using `puppeteer-core` with a compatible Chrome package
+
+**Environment Variables:**
+
+-   `CHROME_PATH`: Custom path to Chrome/Chromium executable (optional)
+
 ## 💻 Usage
 
 1. **Edit HTML**: Use the Monaco editor to write or paste your HTML content
