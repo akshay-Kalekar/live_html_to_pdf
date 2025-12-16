@@ -211,8 +211,11 @@ export const EditorProvider = ({ children }: { children: ReactNode }) => {
     <p style="padding: 20px; color: #666;">Start editing to see your preview...</p>
 </body>
 </html>`;
-            return theme === "dark" 
-                ? emptyHtml.replace("<body>", `<body style="background-color: #1a1a1a; color: #e4e4e7;">`)
+            return theme === "dark"
+                ? emptyHtml.replace(
+                      "<body>",
+                      `<body style="background-color: #1a1a1a; color: #e4e4e7;">`
+                  )
                 : emptyHtml;
         }
 
@@ -241,19 +244,12 @@ export const EditorProvider = ({ children }: { children: ReactNode }) => {
         return html;
     }, [getCurrentCombinedHtml, theme]);
 
-    // Initialize theme from localStorage or system preference (client-side only)
+    // Initialize theme - force light mode only
     useEffect(() => {
         if (!themeInitialized) {
-            const savedTheme = localStorage.getItem(
-                "theme"
-            ) as ThemeMode | null;
-            if (savedTheme) {
-                setTheme(savedTheme);
-            } else if (
-                window.matchMedia("(prefers-color-scheme: dark)").matches
-            ) {
-                setTheme("dark");
-            }
+            // Force light mode - ignore localStorage and system preferences
+            setTheme("light");
+            localStorage.setItem("theme", "light");
             setThemeInitialized(true);
         }
     }, [themeInitialized]);
@@ -292,7 +288,9 @@ export const EditorProvider = ({ children }: { children: ReactNode }) => {
     ]);
 
     const toggleTheme = useCallback(() => {
-        setTheme((prev) => (prev === "light" ? "dark" : "light"));
+        // Disabled - forcing light mode only
+        // setTheme((prev) => (prev === "light" ? "dark" : "light"));
+        setTheme("light");
     }, []);
 
     const switchEditorMode = useCallback(
@@ -323,15 +321,38 @@ export const EditorProvider = ({ children }: { children: ReactNode }) => {
 
         try {
             // #region agent log
-            const headerShouldBeIncluded = pdfHeader.text ||
-                    pdfHeader.showPageNumber ||
-                    pdfHeader.showDate;
-            const footerShouldBeIncluded = pdfFooter.text ||
-                    pdfFooter.showPageNumber ||
-                    pdfFooter.showDate;
-            fetch('http://127.0.0.1:7242/ingest/fcb40112-fc24-49d4-b1d2-1f3d848c9195',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'editorStore.tsx:330',message:'PDF generation request - header/footer state',data:{headerState:pdfHeader,footerState:pdfFooter,headerShouldBeIncluded,footerShouldBeIncluded,htmlHasTitle:finalHtml.includes('<title>')},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B,C'})}).catch(()=>{});
+            const headerShouldBeIncluded =
+                pdfHeader.text ||
+                pdfHeader.showPageNumber ||
+                pdfHeader.showDate;
+            const footerShouldBeIncluded =
+                pdfFooter.text ||
+                pdfFooter.showPageNumber ||
+                pdfFooter.showDate;
+            fetch(
+                "http://127.0.0.1:7242/ingest/fcb40112-fc24-49d4-b1d2-1f3d848c9195",
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        location: "editorStore.tsx:330",
+                        message: "PDF generation request - header/footer state",
+                        data: {
+                            headerState: pdfHeader,
+                            footerState: pdfFooter,
+                            headerShouldBeIncluded,
+                            footerShouldBeIncluded,
+                            htmlHasTitle: finalHtml.includes("<title>"),
+                        },
+                        timestamp: Date.now(),
+                        sessionId: "debug-session",
+                        runId: "run1",
+                        hypothesisId: "B,C",
+                    }),
+                }
+            ).catch(() => {});
             // #endregion
-            
+
             const response = await fetch("/api/generate-pdf", {
                 method: "POST",
                 headers: {
